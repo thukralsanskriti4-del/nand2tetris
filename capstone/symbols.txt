@@ -1,0 +1,10 @@
+MAIN = 0
+FILL = 8
+DRAW = 10
+ROWLOOP = 20
+COLLOOP = 28
+color = 16
+rows = 17
+addr = 18
+cols = 19
+p = 20

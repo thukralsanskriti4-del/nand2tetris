@@ -1,0 +1,57 @@
+// Box.asm  (K = 60: row 60, 20 rows tall, 16 pixels wide)
+(MAIN)
+    @KBD
+    D=M
+    @FILL
+    D;JNE
+    @color
+    M=0
+    @DRAW
+    0;JMP
+(FILL)
+    @color
+    M=-1
+(DRAW)
+    @20
+    D=A
+    @rows
+    M=D
+    @SCREEN
+    D=A
+    @1920
+    D=D+A
+    @addr
+    M=D
+(ROWLOOP)
+    @1
+    D=A
+    @cols
+    M=D
+    @addr
+    D=M
+    @p
+    M=D
+(COLLOOP)
+    @color
+    D=M
+    @p
+    A=M
+    M=D
+    @p
+    M=M+1
+    @cols
+    M=M-1
+    D=M
+    @COLLOOP
+    D;JGT
+    @32
+    D=A
+    @addr
+    M=D+M
+    @rows
+    M=M-1
+    D=M
+    @ROWLOOP
+    D;JGT
+    @MAIN
+    0;JMP
