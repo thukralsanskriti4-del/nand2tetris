@@ -1,0 +1,43 @@
+CHIP CPU {
+    IN inM[16], instruction[16], reset;
+    OUT outM[16], writeM, addressM[15], pc[15];
+
+    PARTS:
+    // A-instruction hai ya C-instruction
+    Not(in=instruction[15], out=isA);
+
+    // A register ka input: A-instruction ho to instruction, warna ALU output
+    Mux16(a=aluOut, b=instruction, sel=isA, out=aIn);
+
+    // A register load: A-instruction ho, ya C-instruction ka dest A ho
+    And(a=instruction[15], b=instruction[5], out=cDestA);
+    Or(a=isA, b=cDestA, out=loadA);
+    ARegister(in=aIn, load=loadA, out=aOut, out[0..14]=addressM);
+
+    // ALU ka y input: A ya M (a-bit = instruction[12])
+    Mux16(a=aOut, b=inM, sel=instruction[12], out=aluY);
+
+    // D register
+    And(a=instruction[15], b=instruction[4], out=loadD);
+    DRegister(in=aluOut, load=loadD, out=dOut);
+
+    // ALU
+    ALU(x=dOut, y=aluY, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=aluOut, out=outM, zr=zr, ng=ng);
+
+    // writeM
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // Jump logic
+    Not(in=zr, out=nzr);
+    Not(in=ng, out=nng);
+    And(a=nzr, b=nng, out=pos);
+    And(a=instruction[2], b=ng, out=jlt);
+    And(a=instruction[1], b=zr, out=jeq);
+    And(a=instruction[0], b=pos, out=jgt);
+    Or(a=jlt, b=jeq, out=j12);
+    Or(a=j12, b=jgt, out=jmpCond);
+    And(a=instruction[15], b=jmpCond, out=doJump);
+
+    // Program Counter
+    PC(in=aOut, load=doJump, inc=true, reset=reset, out[0..14]=pc);
+}
